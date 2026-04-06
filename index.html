@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CryptSolve — Crypt Arithmetic AI Puzzle Engine</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- BACKGROUND GRID -->
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-icon">🗝</span>
+      <span class="logo-text">Crypt<em>Solve</em></span>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" data-panel="solver" onclick="switchPanel('solver')">Solver</button>
+      <button class="nav-btn" data-panel="play" onclick="switchPanel('play')">Play Mode</button>
+      <button class="nav-btn" data-panel="learn" onclick="switchPanel('learn')">How it Works</button>
+    </nav>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <span id="theme-icon">☀</span>
+    </button>
+  </header>
+
+  <main class="main-container">
+
+    <!-- ═══════════════════════════════════ SOLVER PANEL ═══ -->
+    <section class="panel active" id="panel-solver">
+
+      <div class="panel-hero">
+        <h1 class="hero-title">Crypt<br /><em>Arithmetic</em><br />Solver</h1>
+        <p class="hero-sub">AI-powered CSP engine with backtracking search [made by Team 3 (AM2)]</p>
+      </div>
+
+      <!-- PRELOADED PUZZLES -->
+      <div class="presets-strip">
+        <span class="presets-label">Try a puzzle →</span>
+        <button class="preset-chip easy" onclick="loadPreset('SEND + MORE = MONEY')">SEND+MORE=MONEY</button>
+        <button class="preset-chip easy" onclick="loadPreset('BASE + BALL = GAMES')">BASE+BALL=GAMES</button>
+        <button class="preset-chip medium" onclick="loadPreset('CROSS + ROADS = DANGER')">CROSS+ROADS=DANGER</button>
+        <button class="preset-chip medium" onclick="loadPreset('EAT + THAT = APPLE')">EAT+THAT=APPLE</button>
+        <button class="preset-chip hard" onclick="loadPreset('DONALD + GERALD = ROBERT')">DONALD+GERALD=ROBERT</button>
+      </div>
+
+      <!-- INPUT CARD -->
+      <div class="card input-card">
+        <label class="input-label">Enter your puzzle!</label>
+        <div class="puzzle-input-row">
+          <input
+            id="puzzleInput"
+            class="puzzle-input"
+            type="text"
+            placeholder="e.g.  SEND + MORE = MONEY"
+            value=""
+            oninput="clearResults()"
+          />
+          <button class="solve-btn" id="solveBtn" onclick="solvePuzzle()">
+            <span class="btn-text">Solve</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </div>
+        <p class="input-hint">Use uppercase letters. Supports + and - operators. One = sign required.</p>
+      </div>
+
+      <!-- EQUATION DISPLAY -->
+      <div class="card equation-card" id="equationCard" style="display:none">
+        <div class="eq-label">Parsed Equation</div>
+        <div class="eq-display" id="equationDisplay"></div>
+      </div>
+
+      <!-- SOLVING ANIMATION -->
+      <div class="card solving-card" id="solvingCard" style="display:none">
+        <div class="solving-header">
+          <div class="pulse-ring"></div>
+          <span class="solving-title">Running CSP Backtracking…</span>
+        </div>
+        <div class="backtrack-log" id="backtrackLog"></div>
+        <div class="stats-row" id="statsRow"></div>
+      </div>
+
+      <!-- RESULT CARD -->
+      <div class="card result-card" id="resultCard" style="display:none">
+        <div class="result-header">
+          <span class="result-badge" id="resultBadge">✓ SOLVED</span>
+          <span class="result-time" id="resultTime"></span>
+        </div>
+        <div class="mapping-grid" id="mappingGrid"></div>
+        <div class="verified-eq" id="verifiedEq"></div>
+      </div>
+
+      <!-- NO SOLUTION CARD -->
+      <div class="card no-solution-card" id="noSolutionCard" style="display:none">
+        <div class="nosol-icon">✕</div>
+        <div class="nosol-text">No solution exists for this puzzle.</div>
+        <div class="nosol-hint">Double-check your equation or try a different puzzle.</div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════ PLAY PANEL ═══ -->
+    <section class="panel" id="panel-play">
+
+      <div class="panel-hero">
+        <h1 class="hero-title">Play<br /><em>Mode</em></h1>
+        <p class="hero-sub">Guess the digit mappings before the AI does</p>
+      </div>
+
+      <div class="play-controls">
+        <button class="preset-chip easy" onclick="startPlayPuzzle('SEND + MORE = MONEY')">SEND+MORE=MONEY</button>
+        <button class="preset-chip medium" onclick="startPlayPuzzle('BASE + BALL = GAMES')">BASE+BALL=GAMES</button>
+        <button class="preset-chip medium" onclick="startPlayPuzzle('CROSS + ROADS = DANGER')">CROSS+ROADS=DANGER</button>
+        <button class="preset-chip hard" onclick="startPlayPuzzle('DONALD + GERALD = ROBERT')">EAT+THAT=APPLE</button>
+      </div>
+
+      <div class="card play-card" id="playCard" style="display:none">
+        <div class="play-meta-row">
+          <span class="play-puzzle-label" id="playPuzzleLabel"></span>
+          <div class="play-stats">
+            <span class="stat-chip">Attempts: <strong id="attemptCount">0</strong></span>
+            <span class="stat-chip">Score: <strong id="scoreCount">1000</strong></span>
+          </div>
+        </div>
+
+        <div class="play-eq" id="playEqDisplay"></div>
+
+        <div class="play-inputs" id="playInputs"></div>
+
+        <div class="play-actions">
+          <button class="solve-btn secondary" onclick="checkGuess()">Check Answer</button>
+          <button class="hint-btn" onclick="giveHint()">💡 Hint (−50pts)</button>
+          <button class="reveal-btn" onclick="revealAnswer()">Show Solution</button>
+        </div>
+
+        <div class="play-feedback" id="playFeedback"></div>
+      </div>
+
+      <div class="card play-idle-card" id="playIdleCard">
+        <div class="idle-icon">🎮</div>
+        <p>Select a puzzle above to start playing!</p>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════ LEARN PANEL ═══ -->
+    <section class="panel" id="panel-learn">
+
+      <div class="panel-hero">
+        <h1 class="hero-title">How It<br /><em>Works</em></h1>
+        <p class="hero-sub">The AI concepts behind the solver</p>
+      </div>
+
+      <div class="learn-grid">
+
+        <div class="card learn-card">
+          <div class="learn-icon">🔐</div>
+          <h2>What is Crypt Arithmetic?</h2>
+          <p>
+            Crypt Arithmetic is a type of mathematical puzzle
+            where digits are replaced by letters. Each letter represents a unique digit (0–9), and the goal is
+            to find an assignment that makes the arithmetic equation valid.
+          </p>
+          <div class="learn-example">
+            <code>  S E N D<br/>+ M O R E<br/>─────────<br/>M O N E Y</code>
+          </div>
+          <p>The classic SEND+MORE=MONEY has a unique solution: S=9, E=5, N=6, D=7, M=1, O=0, R=8, Y=2.</p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-icon">🧩</div>
+          <h2>Constraint Satisfaction Problem (CSP)</h2>
+          <p>
+            A CSP is defined by three components:
+          </p>
+          <ul class="learn-list">
+            <li><strong>Variables</strong> — each unique letter in the puzzle</li>
+            <li><strong>Domain</strong> — digits 0–9 for each variable</li>
+            <li><strong>Constraints</strong> — all-different digits, no leading zeros, equation must hold</li>
+          </ul>
+          <p>
+            The solver narrows down possibilities by propagating constraints before and during search, dramatically
+            reducing the search space compared to brute force.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-icon">🔁</div>
+          <h2>Backtracking Algorithm</h2>
+          <p>
+            Backtracking is a depth-first search with pruning. It works like this:
+          </p>
+          <ol class="learn-list numbered">
+            <li>Pick the next unassigned letter</li>
+            <li>Try each digit in its domain</li>
+            <li>Check if constraints are still satisfied</li>
+            <li>If yes → recurse deeper; if no → backtrack</li>
+            <li>Continue until all letters are assigned (solution!) or all options exhausted (no solution)</li>
+          </ol>
+          <div class="learn-complexity">
+            <span>Worst case: <code>10! = 3,628,800</code> iterations</span>
+            <span>With pruning: often solved in <code>&lt; 1,000</code></span>
+          </div>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-icon">⚡</div>
+          <h2>Optimizations Used</h2>
+          <ul class="learn-list">
+            <li><strong>Constraint Propagation</strong> — eliminate impossible values early</li>
+            <li><strong>Most Constrained Variable (MCV)</strong> — assign letters in order of appearance to enable early failure detection</li>
+            <li><strong>Forward Checking</strong> — verify partial assignments satisfy column-wise carry constraints</li>
+            <li><strong>Leading Zero Pruning</strong> — immediately reject any assignment that puts 0 on a leading letter</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>CryptSolve — CSP + Backtracking </span>
+    <span>Built by Team 3 (AM2)</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
